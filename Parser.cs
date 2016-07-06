@@ -30,6 +30,7 @@ namespace ParserConsoleApplication
                 foreach (var item in html.DocumentNode.SelectNodes("//*[@class='domain']"))
                 {
                     domains.Add(item.InnerHtml);
+                    Console.WriteLine(item.InnerHtml);
                 }
                 return domains;
             }
