@@ -1,49 +1,59 @@
-﻿using HtmlAgilityPack;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Net;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+
+using HtmlAgilityPack;
 
 namespace ParserConsoleApplication
 {
+    /// <summary>
+    /// Parser of Yandex Direct Search page
+    /// </summary>
     public class Parser
     {
-        public byte[] _page { get; private set; }
+        private byte[] Page { get; set; }
+        private readonly string yandexDirectLink = "https://direct.yandex.ru/search?text=";
+        private readonly string selector = "//div[@class='path organic__path']//a[1]";
+
+        /// <summary>
+        /// Parser constructor
+        /// </summary>
+        /// <param name="path">Name of domain (e.g. https:/yandex.ru/)</param>
         public Parser(string path)
         {
-            Init(path);
+            Page = DownloadPage(path);
         }
-        private async void Init(string path)
+
+        /// <summary>
+        /// Extraction of domains related with Direct Ad
+        /// </summary>
+        /// <returns>Collection of domains</returns>
+        public IEnumerable<string> GetAds()
         {
-            _page = await DownloadPage(path);
-        }
-        public async Task<List<string>> GetDomains()
-        {
-            if (_page != null)
+            if (Page == null) throw new ArgumentNullException();
+
+            var ads = new List<string>();
+            var result = System.Text.Encoding.UTF8.GetString(Page);
+
+            var html = new HtmlDocument();
+            html.LoadHtml(result);
+            var nodes = html.DocumentNode.SelectNodes(selector);
+            if (nodes != null)
             {
-                List<string> domains = new List<string>();
-
-                string result = System.Text.Encoding.UTF8.GetString(_page);
-
-                HtmlDocument html = new HtmlDocument();
-                html.LoadHtml(result);
-                foreach (var item in html.DocumentNode.SelectNodes("//*[@class='domain']"))
-                {
-                    domains.Add(item.InnerHtml);
-                    Console.WriteLine(item.InnerHtml);
-                }
-                return domains;
+                foreach (var node in nodes) ads.Add(node.InnerText);
             }
-            Console.WriteLine("No domains");
-            return null;
+            
+            return ads;            
         }
-        private async Task<byte[]> DownloadPage(string path)
+
+        private byte[] DownloadPage(string path)
         {
-            var client = new WebClient();
-            var link = "https://direct.yandex.ru/search?text=" + path;
-            Uri uri = new Uri(link);
-            var page = client.DownloadDataTaskAsync(uri);
-            return page.Result;
+            using (var client = new WebClient())
+            {
+                var uri = new Uri(yandexDirectLink + path);
+                var pageData = client.DownloadData(uri);
+                return pageData;
+            }
         }
     }
 }

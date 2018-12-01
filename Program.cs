@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace ParserConsoleApplication
 {
@@ -6,18 +7,20 @@ namespace ParserConsoleApplication
     {
         static void Main(string[] args)
         {
-            #region [.input domain from keyboard - Replace to file parser]
+            //TODO: Get domain name from file
             Console.WriteLine("Please, insert concrete domain:");
             var input = Console.ReadLine();
-            Console.WriteLine(); 
-            #endregion
-            
+
             var parser = new Parser(input);
-            var domains = parser.GetDomains();
+            var ads = parser.GetAds();
 
             //TODO: Add select distinct(?) and save to file
-
-            Console.WriteLine("{1}Common numbers of domains: {0}",domains.Result.Count, System.Environment.NewLine);
+            Console.WriteLine("{1}Number of ads: {0}{1}", ads.Count(), Environment.NewLine);
+            foreach (var domain in ads)
+            {
+                Console.WriteLine(domain);
+            }
+            Console.WriteLine("{0}Press any key to close app...", Environment.NewLine);
             Console.ReadKey();
         }
     }
